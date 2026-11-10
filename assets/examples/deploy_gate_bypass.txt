@@ -1,0 +1,3 @@
+$ git push origin main  (in bypassPermissions mode)
+decision: deny
+deploy-gate blocked a git push to production branch 'main'. Do not retry or work around this. Stop and ask the user to confirm the deploy; they can run the command themselves, or add a pattern to .claude/deploy-gate-allow for deploys that never need a prompt.

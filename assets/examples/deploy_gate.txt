@@ -1,0 +1,3 @@
+$ npm run build && npx vercel --prod
+decision: ask
+deploy-gate: this looks like a Vercel production deploy. A person should confirm production changes. Approve only if you asked for this deploy.

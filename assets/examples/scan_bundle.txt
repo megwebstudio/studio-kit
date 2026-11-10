@@ -1,0 +1,5 @@
+$ python3 scan_bundle.py dist/
+scanned 1 file(s) in dist
+FAIL: 1 finding(s)
+  assets/index-4f2a.js  OpenAI API key  sk-pro... (56 chars)
+(exit 1)

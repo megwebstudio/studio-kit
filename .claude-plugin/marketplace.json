@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "studio-kit",
+  "description": "Studio Kit: production guardrails and QA skills for building premium websites with Claude Code.",
+  "owner": {
+    "name": "MEG Web Studio",
+    "email": "info@megwebstudio.com"
+  },
+  "plugins": [
+    {
+      "name": "studio-kit",
+      "description": "Free core: launch-qa (render the real page and check it at 3 widths), five-attacks (pre-launch security test), concrete-copy (copy rules + HTML linter), and two hooks: deploy-gate (asks a human before recognized production deploys) and secret-guard (blocks common API key formats in source, in VITE_/NEXT_PUBLIC_ vars and in git add of a non-ignored .env).",
+      "source": "./plugins/studio-kit",
+      "category": "development",
+      "homepage": "https://megwebstudio.com/kit/"
+    }
+  ]
+}

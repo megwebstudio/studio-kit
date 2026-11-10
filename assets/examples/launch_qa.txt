@@ -1,0 +1,18 @@
+$ python3 launch_qa.py site/
+launch-qa FAIL  http://127.0.0.1:62369/
+  PASS  page-load            HTTP 200, load 5 ms (desktop)
+  FAIL  console-errors       1 distinct error(s)
+  FAIL  failed-requests      1 failed request(s)
+  FAIL  horizontal-overflow  page scrolls sideways (worst: mobile, +1210px)
+  PASS  title                12 chars: Osteria Lume
+  WARN  meta-description     26 chars (aim for 50-160)
+  WARN  og-tags              missing og:title, og:image
+  PASS  lang                 lang="en"
+  PASS  h1                   1 <h1>: Fresh pasta every morning
+  FAIL  img-alt              1 of 1 <img> without alt attribute
+  PASS  meta-viewport        width=device-width,initial-scale=1
+  PASS  small-text-mobile    4 text elements, none under 12px
+  WARN  tap-targets-mobile   1 of 2 targets under 40px
+  FAIL  internal-links       1 of 2 same-origin links broken
+report: qa-out/report.md
+(exit 1)

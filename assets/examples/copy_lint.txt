@@ -1,0 +1,12 @@
+$ python3 copy_lint.py index.html
+== index.html  (5 text blocks)  FAIL 5  WARN 3
+  FAIL AI-tell word 'elevate' in <title>: Elevate Your Dining Journey
+  FAIL AI-tell word 'seamless' in <h1>: Unlock a seamless taste experience
+  FAIL AI-tell word 'unlock' in <h1>: Unlock a seamless taste experience
+  FAIL 'not just X, it's Y' shape in <p>: Not just a restaurant, it's a lifestyle — crafted with passion.
+  FAIL em dash in <p>: Not just a restaurant, it's a lifestyle — crafted with passion.
+  WARN soft word 'journey' (keep only if literal) in <title>: Elevate Your Dining Journey
+  WARN soft word 'passion' (keep only if literal) in <p>: Not just a restaurant, it's a lifestyle — crafted with passion.
+  WARN vague button/link text 'Learn more' (use verb + object)
+RESULT: FAIL
+(exit 1)
