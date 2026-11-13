@@ -15,6 +15,15 @@ Two hooks that stop the expensive mistakes, three skills that check the page bef
 
 The scripts run on your machine and the kit adds no telemetry or accounts; Claude Code itself sends your prompts and the context it reads to the model as usual. Standard-library Python.
 
+## Data handling and network access
+
+Studio Kit is a local developer tool for web developers and studios, not a hosted service or a product intended for children under 18. MEG Web Studio does not receive or retain Claude session data through this plugin. The plugin adds no telemetry, account system, or automatic upload of project files or QA reports. Claude Code's own model/context handling is separate.
+
+- Local inputs and outputs: hooks inspect tool input (commands and proposed file content); scanners and the copy linter read the files or pages you select. launch-qa saves full-page screenshots and report.md/report.json locally in its output folder. Page text, URLs, console errors and screenshots may contain personal or confidential data. These files are not automatically deleted; you control their retention and sharing.
+- Network destinations are the URLs you choose, not MCP connectors. copy_lint.py fetches the selected page. scan_bundle.py fetches the selected page and follows scripts/imports/source maps selected on the same host. HTTP redirects can lead to another host. launch-qa opens the chosen page in Chromium, runs its JavaScript, and checks same-origin links; the page itself may contact its own third-party services, and redirects are followed.
+- probe_endpoint.py sends the JSON/form body and optional headers you supply to the selected endpoint (at most 100 requests). Use synthetic test data and only systems you own or are authorized to test; the script does not enforce synthetic-only payloads. A real endpoint may store the requests or trigger its normal downstream actions.
+- Network traffic exposes ordinary request metadata (such as the requesting IP) to the destination. Destination-site and Claude-provider retention policies are outside this plugin; no 30-day deletion promise is made.
+
 ## Install
 
 Inside Claude Code:
