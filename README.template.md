@@ -15,6 +15,15 @@ Two hooks that stop the expensive mistakes, three skills that check the page bef
 
 The scripts run on your machine and the kit adds no telemetry or accounts; Claude Code itself sends your prompts and the context it reads to the model as usual. Standard-library Python.
 
+## Data handling and network access
+
+Studio Kit is a local developer tool for web developers and studios, not a hosted service or a product intended for children under 18. MEG Web Studio does not receive or retain Claude session data through this plugin. The plugin adds no telemetry, account system, or automatic upload of project files or QA reports. Claude Code's own model/context handling is separate.
+
+- Local inputs and outputs: hooks inspect tool input (commands and proposed file content); scanners and the copy linter read the files or pages you select. launch-qa saves full-page screenshots and report.md/report.json locally in its output folder. Page text, URLs, console errors and screenshots may contain personal or confidential data. These files are not automatically deleted; you control their retention and sharing.
+- Network destinations are the URLs you choose, not MCP connectors. copy_lint.py fetches the selected page. scan_bundle.py fetches the selected page and follows scripts/imports/source maps selected on the same host. HTTP redirects can lead to another host. launch-qa opens the chosen page in Chromium, runs its JavaScript, and checks same-origin links; the page itself may contact its own third-party services, and redirects are followed.
+- probe_endpoint.py sends the JSON/form body and optional headers you supply to the selected endpoint (at most 100 requests). Use synthetic test data and only systems you own or are authorized to test; the script does not enforce synthetic-only payloads. A real endpoint may store the requests or trigger its normal downstream actions.
+- Network traffic exposes ordinary request metadata (such as the requesting IP) to the destination. Destination-site and Claude-provider retention policies are outside this plugin; no 30-day deletion promise is made.
+
 ## Install
 
 Inside Claude Code:
@@ -81,7 +90,7 @@ console error, dead link). All four are caught; the report and full-page screens
 | `STUDIO_KIT_DEPLOY_GATE` | `ask`, `deny`, `off` | `ask` (`deny` when permissions are bypassed) |
 | `STUDIO_KIT_PROD_BRANCHES` | comma list | `main,master,production,prod,release,live` |
 | `STUDIO_KIT_SECRET_GUARD` | `on`, `ask`, `off` | `on` (deny high-confidence keys, ask otherwise) |
-| `.claude/deploy-gate-allow` | one regex per line | commands that never need a prompt. The regex is searched in the whole command line, so anchor it: `^wrangler deploy --env staging$` |
+| `.claude/deploy-gate-allow` | one regex per line | the entire command must match, e.g. `wrangler deploy --env staging`; added commands are not covered by that line |
 | `.claude/secret-guard-allow` | one glob per line | paths to skip, e.g. `tests/fixtures/*` (`*` also matches subfolders) |
 
 Real `.env` files with server-side names are allowed: that is where secrets belong. Findings are shown
@@ -90,24 +99,42 @@ masked (first 6 characters and length).
 These hooks are guardrails against accidents, not a security boundary: a person with shell access can always
 deploy. If Python is missing the hooks print a warning and let the command through rather than blocking your work.
 
-### What the hooks do not catch (1.0.0)
+### Changes in 1.0.1
 
-They read the command line and the content being written. Known gaps, each one reproduced:
+- Literal Git global options and quoted/repeated `-C` directories no longer hide recognized pushes or env staging.
+  Repository/configuration overrides that the checks cannot safely reproduce require review; pending `-c` settings
+  are never executed by the checks.
+- A single `&` separates commands, while quoted/escaped separators in paths remain intact.
+- Git supplies the candidate env paths recursively, including tracked files that are now ignored; literal directory
+  pathspecs are respected. A staging exception must match the entire command, not just its first part.
+- Direct Write/Edit/MultiEdit/NotebookEdit changes to either allowlist require confirmation. Relative paths are
+  normalized before allowlist matching; direct policy edits through an existing symlink are also checked.
+- `.env.js`, other recognized source extensions and env files under public/output directories are scanned for keys.
+  Private server-side env files remain allowed. Fixture findings still ask interactively, but findings deny when
+  the runtime reports `bypassPermissions` or `dontAsk` instead of relying on an unavailable prompt.
+- Shell comments are skipped, so a quote inside `# ...` no longer hides the command after it. Command strings
+  given to `sh -c`, `bash -c` or `zsh -c` are checked too. When the quoting cannot be followed, or a `-C`
+  directory uses `~`, `$VAR`, a backtick or a missing path, a push or staging command asks instead of passing.
 
-- A deploy started by a script: `npm run deploy`, `bash deploy.sh`. The gate does not read what the script runs.
-- `git` with an option before `push`: `git -c user.name=x push origin main` and `git --no-pager push origin main`
-  pass. `git push origin main` and `git -C <dir> push origin main` are asked.
-- `surge` after a single `&`: `echo ok & surge ./dist` passes. The other tools are still asked there, and `&&`,
-  `||`, `;` and `|` are split correctly.
-- A `.env` in a subfolder when you add a folder or everything: `git add src/`, `git add .`, `git commit -am`.
-  Only the project root is checked there. `git add src/.env` by name is blocked.
-- An allowlist line without anchors: `wrangler deploy --env staging` also lets through
-  `wrangler deploy --env staging && vercel --prod`.
-- Changes to the two allowlist files. They are ordinary project files that Claude can edit: keep them in git and
-  read the diff.
-- Any file named `.env` or `.env.<something>` counts as a real `.env`: `.env.js`, `.env.production.ts` and
-  `public/.env` are not scanned for keys, only for browser-exposed names.
-- A key written under `test/`, `tests/`, `fixtures/` or `spec/` is asked, not blocked.
+### Remaining limitations
+
+They read command text and proposed file content; they are not a shell interpreter or a security sandbox.
+
+- A deploy started inside a script, alias or function (`npm run deploy`, `bash deploy.sh`) can still be missed.
+- Shell substitutions (`$(...)`, backticks), subshells `( ... )`, here-documents, dynamic paths/options,
+  environment changes and shell control structures are not comprehensively resolved. Git context overrides are
+  handled conservatively, not fully emulated.
+- Shell commands can still edit the allowlists or the hook itself. Keep those files in Git and review changes;
+  the direct-edit check does not make the policy immutable. Explicitly broad allowlist patterns remain broad.
+- Secret matching covers known patterns, not every credential or encoded/generated value. The Git check focuses
+  on env filenames; it is not a full staged-content secret scanner. An interactive fixture finding still asks.
+  A forced `git add -f .` or `git add --force <dir>` can stage an ignored `.env` without a warning; a forced add
+  of a named env file is blocked.
+- When secret-guard asks about a file write (for example a key in a test fixture), Claude Code shows its normal
+  file dialog. In the version tested (2.1.314) the hook's reason is not shown there: read the content preview
+  before you approve. For Bash commands the reason is shown in the prompt.
+- Internal errors, missing Python and unavailable Git checks can leave a command unexamined. The wrapper warns
+  on hook failure; these controls are accident prevention, not a substitute for sandboxing or a release review.
 
 Found another one? Open an issue with the command.
 
