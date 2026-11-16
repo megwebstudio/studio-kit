@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.3 — November 2026
+
+- Keep Git commands whole when an option contains `$(...)` or backticks; treat the substitution as an unresolved value.
+- Report `git config`/`git remote` changes next to staging without skipping the `.env` scan.
+- Catch allowlist writes through `git diff/log --output` and through `.claude/` paths with wildcards or variables.
+- Ask on pushes to a computed destination (`$(git branch --show-current)`, `$BRANCH`).
+- Parse in linear time and once per command, so very long or deeply nested commands cannot push the hook past its timeout.
+- Ask on subshells glued to a word, process substitutions, computed Git subcommands and very deep or very long `sh -c` nesting; recognize allowlist names split by quotes or written after `cd .claude`.
+
 ## 1.0.2 — November 2026
 
 - Run the 1.0.0 reading of each command as a floor next to the new parser; the stricter answer wins.

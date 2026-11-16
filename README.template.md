@@ -99,6 +99,19 @@ masked (first 6 characters and length).
 These hooks are guardrails against accidents, not a security boundary: a person with shell access can always
 deploy. If Python is missing the hooks print a warning and let the command through rather than blocking your work.
 
+### Changes in 1.0.3
+
+- A substitution inside a Git option (`git -C $(pwd) push`, `git --git-dir=$(pwd)/.git push`) no longer cuts the
+  Git command in two: the substitution counts as an unresolved value, so the push asks.
+- A `git config` or `git remote` change in the same command is reported and the `.env` scan still runs, so a real
+  env finding is still denied.
+- Allowlist writes are also caught through `git diff/log --output` and through `.claude/` paths with wildcards or
+  variables; plain reads (`cat`, `ls`, `grep`, `git diff`) stay quiet.
+- A subshell glued to a word (`then(...)`, `do(...)`), a process substitution (`<(...)`, `>(...)`), a computed
+  subcommand (`git $(...)`, `git "$VERB"`) and very deep or very long `sh -c` nesting ask instead of passing.
+  A push to a computed destination (`git push origin $(git branch --show-current)`, `"$BRANCH"`) asks. Allowlist names split by quotes or backslashes, or written after
+  `cd .claude`, are recognized.
+
 ### Changes in 1.0.2
 
 - The 1.0.0 reading of each command now runs next to the new parser and the stricter answer wins, so no command
