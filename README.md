@@ -139,6 +139,18 @@ masked (first 6 characters and length).
 These hooks are guardrails against accidents, not a security boundary: a person with shell access can always
 deploy. If Python is missing the hooks print a warning and let the command through rather than blocking your work.
 
+### Changes in 1.0.2
+
+- The 1.0.0 reading of each command now runs next to the new parser and the stricter answer wins, so no command
+  that 1.0.0 stopped can pass.
+- Git commands inside strings that another command runs (`eval`, `ssh host "..."`, `watch`, `bash <<<`,
+  `echo ... | sh`), in subshells `( ... )`, in `$(...)` and in backticks are checked.
+- More routing overrides ask: `GIT_CONFIG*`, `GIT_COMMON_DIR`, `GIT_OBJECT_DIRECTORY`, `GIT_NAMESPACE`, `--bare`,
+  `--exec-path`, an exported `GIT_DIR`, and `git config` or `git remote set-url` in the same command as a push or
+  a `git add`.
+- Writing `.claude/deploy-gate-allow` or `.claude/secret-guard-allow` from the shell (`>`, `tee`, `sed -i`, `cp`...)
+  asks for confirmation; reading them does not.
+
 ### Changes in 1.0.1
 
 - Literal Git global options and quoted/repeated `-C` directories no longer hide recognized pushes or env staging.
@@ -161,11 +173,14 @@ deploy. If Python is missing the hooks print a warning and let the command throu
 They read command text and proposed file content; they are not a shell interpreter or a security sandbox.
 
 - A deploy started inside a script, alias or function (`npm run deploy`, `bash deploy.sh`) can still be missed.
-- Shell substitutions (`$(...)`, backticks), subshells `( ... )`, here-documents, dynamic paths/options,
-  environment changes and shell control structures are not comprehensively resolved. Git context overrides are
+- Here-documents, variables, dynamic paths/options, environment changes and shell control structures are not
+  comprehensively resolved; substitutions and subshells are only split, not evaluated. Git context overrides are
   handled conservatively, not fully emulated.
-- Shell commands can still edit the allowlists or the hook itself. Keep those files in Git and review changes;
-  the direct-edit check does not make the policy immutable. Explicitly broad allowlist patterns remain broad.
+- Quoted multi-word strings are read as possible commands, so a commit message that mentions `git push origin main`
+  can ask. The checks err on the side of asking.
+- Shell commands that name an allowlist file ask, but a script, another path to the same file or an edit to the
+  hook itself can still change the policy. Keep those files in Git and review changes; the checks do not make the
+  policy immutable. Explicitly broad allowlist patterns remain broad.
 - Secret matching covers known patterns, not every credential or encoded/generated value. The Git check focuses
   on env filenames; it is not a full staged-content secret scanner. An interactive fixture finding still asks.
   A forced `git add -f .` or `git add --force <dir>` can stage an ignored `.env` without a warning; a forced add

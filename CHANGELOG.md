@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2 — November 2026
+
+- Run the 1.0.0 reading of each command as a floor next to the new parser; the stricter answer wins.
+- Check Git commands inside strings run by `eval`, `ssh`, `watch`, here-strings and pipes into a shell, in subshells and in substitutions.
+- Treat more Git routing variables and options, exported `GIT_*` routing variables and `git config`/`git remote` changes in the same command as overrides.
+- Ask when the shell writes a guardrail allowlist file.
+
 ## 1.0.1 — November 2026
 
 - Recognize literal Git global options and quoted `-C` paths; review ambiguous repository/configuration overrides.
